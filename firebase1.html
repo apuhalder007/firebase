@@ -1,0 +1,80 @@
+<html>
+    <head> 
+    <title>Sample FireBase Example </title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    </head>
+    <body>
+        <div class="container">
+            <div id="message-area">
+                <ul id="list-items">
+                    <div id="single-message">
+
+                    </div>
+                </ul>
+            </div>
+            <div class="form-group">
+                <input type="text" class="form-controller" name="massage" id="message" required>&nbsp; <button class="btn btn-primary" id="addBtn">Add</button>
+            </div>
+        </div>
+        <script src="https://www.gstatic.com/firebasejs/4.2.0/firebase.js"></script>
+        <script type="text/javascript">
+        window.onload= function(){
+            var config = {
+            apiKey: "AIzaSyALvY_vlb3x0JFTgGI0912lXXW78vI2N_8",
+            authDomain: "todoapp-9a26f.firebaseapp.com",
+            databaseURL: "https://todoapp-9a26f.firebaseio.com",
+            projectId: "todoapp-9a26f",
+            storageBucket: "todoapp-9a26f.appspot.com",
+            messagingSenderId: "388119669974"
+            };
+            firebase.initializeApp(config);
+            var message = document.getElementById('message');
+            var single_message = document.getElementById('single-message');
+            var listItems = document.getElementById('list-items');
+            var addBtn = document.getElementById('addBtn');
+            var idCounter = 0;
+
+            var dbRef = firebase.database().ref();
+            dbRefTasks =dbRef.child('tasks');
+            dbRefTasks.on('value', snap=>{
+                //console.log(snap.val());
+                //alert(snap.val().length);
+            });
+            
+            dbRefTasks.on('child_added', snap=>{
+                console.log(snap.val());
+                var li = document.createElement('li');
+                li.innerText = snap.child("task").val();
+                li.id = snap.key;
+                listItems.appendChild(li);
+                idCounter++;
+            });
+
+             dbRefTasks.on('child_changed', snap=>{
+                var liChanged = document.getElementById(snap.key);
+                liChanged.innerText = snap.child('task').val();
+                
+            });
+
+            dbRefTasks.on('child_removed', snap=>{
+                var liToRemoved = document.getElementById(snap.key);
+                liToRemoved.remove();
+                idCounter--;
+            });
+
+            addBtn.addEventListener('click', e=>{
+                //alert(message.value);
+                if(message.value =='') return false;
+                var newTaskKey = dbRefTasks.push().key;
+                //dbRefTasks.set({7:{"task":"HTML Test","done":true}});
+                //alert(newTaskKey);
+                var updates = {};
+                updates['/'+idCounter] = {"task":message.value,"done":true};
+                return dbRefTasks.update(updates);
+            });
+
+        }
+            
+        </script>
+    </body>
+</html>
